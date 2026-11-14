@@ -46,3 +46,7 @@
 .admin-modal textarea{min-height:85px;height:auto;padding:10px;resize:vertical;line-height:1.7}
 @media(max-width:850px){.admin-product-filters{grid-template-columns:1fr 1fr}.admin-product-filters .admin-search{grid-column:1/-1}}
 @media(max-width:520px){.admin-product-filters{grid-template-columns:1fr}.admin-product-filters .admin-search{grid-column:auto}.admin-image-item{grid-template-columns:76px minmax(0,1fr)}.admin-image-item img{width:76px;height:92px}.admin-variant-actions button{font-size:9px}}
+
+
+/* Subtle developer credit in the shared site footer */
+.site-footer .developer-credit{display:block;margin-top:10px;color:rgba(255,255,255,.62);font-size:10px;font-weight:500;letter-spacing:.11em;line-height:1.6;text-align:inherit;}
