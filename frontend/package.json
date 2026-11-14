@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
-    "build": "tsc -b && vite build",
+    "build": "node -e \"console.log('[supabase-env] VITE_SUPABASE_URL=' + Boolean(process.env.VITE_SUPABASE_URL)); console.log('[supabase-env] VITE_SUPABASE_ANON_KEY=' + Boolean(process.env.VITE_SUPABASE_ANON_KEY))\" && tsc -b && vite build",
     "preview": "vite preview --host 0.0.0.0",
     "typecheck": "tsc -b --pretty"
   },
