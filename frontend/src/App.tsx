@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ArrowLeft, ArrowUpLeft, Check, ChevronDown, LoaderCircle, LogIn,
   Menu, Minus, Plus, Search, ShoppingBag, SlidersHorizontal, UserRound, X,
@@ -92,13 +92,13 @@ export default function App() {
     setLoading(false)
   }, [])
 
-  const refreshRemoteCart = useCallback(async (uid: string, catalog = products) => {
+  const refreshRemoteCart = useCallback(async (uid: string, catalog = products, silent = false) => {
     if (!supabase) return
     const { data: cart, error: cartError } = await supabase.from('carts').select('id').eq('user_id', uid).maybeSingle()
-    if (cartError) { setNotice('تعذر التحقق من السلة المحفوظة. حاول تحديث الصفحة.'); return }
+    if (cartError) { if (!silent) setNotice('تعذر التحقق من السلة المحفوظة. حاول تحديث الصفحة.'); return }
     if (!cart) { setCartLines([]); return }
     const { data, error } = await supabase.from('cart_items').select('variant_id,quantity').eq('cart_id', cart.id)
-    if (error) { setNotice('تعذر قراءة السلة المحفوظة.'); return }
+    if (error) { if (!silent) setNotice('تعذر قراءة السلة المحفوظة.'); return }
     const lines: CartLine[] = []
     for (const row of data || []) {
       for (const product of catalog) {
@@ -167,14 +167,22 @@ export default function App() {
       return n + (p && v ? Number(v.price_override ?? p.base_price) * x.quantity : 0)
     }, 0)
 
+  const openProduct = useCallback((product: Product) => {
+    setSelectedProduct(product)
+    setSelectedVariant(product.variants[0] ?? null)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [])
+
   const setNav = (next: Page) => { setMobileNavOpen(false); setPage(next); setSelectedProduct(null); setQuery(''); window.scrollTo({ top: 0, behavior: 'smooth' }) }
 
   const addToCart = async (variant: ProductVariant) => {
+    // Adding an item is intentionally silent: no toast and no automatic cart popup.
+    setNotice('')
     if (session && supabase) {
       const current = cartLines.find(x => x.variantId === variant.id)?.quantity || 0
       const { error } = await supabase.rpc('cart_set_item', { p_variant_id: variant.id, p_quantity: current + 1 })
-      if (error) { setNotice(error.message.includes('INSUFFICIENT_STOCK') ? 'الكمية المطلوبة غير متاحة حاليًا.' : 'لم نتمكن من إضافة المنتج. حاول مرة أخرى.'); return }
-      await refreshRemoteCart(session.user.id)
+      if (error) return
+      await refreshRemoteCart(session.user.id, products, true)
     } else {
       setGuestLines(old => {
         const found = old.find(x => x.variantId === variant.id)
@@ -182,7 +190,6 @@ export default function App() {
           : [...old, { variantId: variant.id, quantity: 1 }]
       })
     }
-    setNotice('اتضاف المنتج للسلة'); setCartOpen(true)
   }
 
   const updateQuantity = async (line: CartLine, quantity: number) => {
@@ -250,15 +257,15 @@ export default function App() {
       <main id="catalog" className="catalog-section">
         <div className="section-heading"><div><span className="eyebrow">THE DWLY EDIT</span><h2>{title}</h2><p>{page === 'home' ? 'قطع مختارة من الكتالوج المنشور.' : 'اكتشف المنتجات المتاحة في هذا القسم.'}</p></div><span className="result-count">{filteredProducts.length.toString().padStart(2, '0')} PRODUCTS</span></div>
         <div className="catalog-tools"><label className="search-box"><Search size={18}/><input value={query} onChange={e => setQuery(e.target.value)} placeholder="دوّر على منتج..." aria-label="ابحث عن منتج"/><kbd>⌕</kbd></label><label className="sort-box"><SlidersHorizontal size={16}/><span>ترتيب حسب</span><select value={sort} onChange={e => setSort(e.target.value)}><option value="newest">الأحدث</option><option value="featured">المميزة</option><option value="price-asc">السعر: الأقل</option><option value="price-desc">السعر: الأعلى</option></select><ChevronDown size={14}/></label></div>
-        {!isSupabaseConfigured ? <div className="state-panel error-state">اتصال Supabase غير مُعد. لم نستخدم منتجات أو مخزونًا تجريبيًا بدلًا من البيانات الحقيقية.</div> : loading ? <div className="state-panel"><LoaderCircle className="spin"/> بنحمّل المنتجات من المتجر...</div> : loadError ? <div className="state-panel error-state">{loadError}<button onClick={() => void loadProducts()}>إعادة المحاولة</button></div> : filteredProducts.length === 0 ? <div className="empty-catalog"><div className="empty-mark">DWLY</div><h3>{products.length === 0 ? 'لسه مفيش منتجات منشورة' : 'مفيش نتائج للبحث ده'}</h3><p>{products.length === 0 ? 'لما تضيف منتجات حقيقية وتفعّل نشرها هتظهر هنا تلقائيًا.' : 'جرّب كلمة بحث تانية أو اختار قسم مختلف.'}</p>{query && <button className="text-btn" onClick={() => setQuery('')}>مسح البحث</button>}</div> : <div className="product-grid">{filteredProducts.map(product => <ProductCard key={product.id} product={product} onOpen={() => { setSelectedProduct(product); setSelectedVariant(product.variants[0] ?? null); window.scrollTo({ top: 0, behavior: 'smooth' }) }} />)}</div>}
+        {!isSupabaseConfigured ? <div className="state-panel error-state">اتصال Supabase غير مُعد. لم نستخدم منتجات أو مخزونًا تجريبيًا بدلًا من البيانات الحقيقية.</div> : loading ? <div className="state-panel"><LoaderCircle className="spin"/> بنحمّل المنتجات من المتجر...</div> : loadError ? <div className="state-panel error-state">{loadError}<button onClick={() => void loadProducts()}>إعادة المحاولة</button></div> : filteredProducts.length === 0 ? <div className="empty-catalog"><div className="empty-mark">DWLY</div><h3>{products.length === 0 ? 'لسه مفيش منتجات منشورة' : 'مفيش نتائج للبحث ده'}</h3><p>{products.length === 0 ? 'لما تضيف منتجات حقيقية وتفعّل نشرها هتظهر هنا تلقائيًا.' : 'جرّب كلمة بحث تانية أو اختار قسم مختلف.'}</p>{query && <button className="text-btn" onClick={() => setQuery('')}>مسح البحث</button>}</div> : <div className="product-grid">{filteredProducts.map(product => <ProductCard key={product.id} product={product} onOpen={openProduct} />)}</div>}
       </main>
     </>}
 
-    <footer className="site-footer"><div className="footer-brand"><span dir="ltr">dwly.eg</span><p>هدومك اللي بتشبهك.</p></div><div className="footer-links"><button onClick={() => setNav('men')}>رجالي</button><button onClick={() => setNav('women')}>حريمي</button><button onClick={() => setNav('shoes')}>أحذية</button><button onClick={() => setNav('account')}>حسابي</button></div><small>© 2026 DWLY EGY. جميع الحقوق محفوظة.</small></footer>
+    <footer className="site-footer"><div className="footer-brand"><span dir="ltr">dwly.eg</span><p>هدومك اللي بتشبهك.</p></div><div className="footer-links"><button onClick={() => setNav('men')}>رجالي</button><button onClick={() => setNav('women')}>حريمي</button><button onClick={() => setNav('shoes')}>أحذية</button><button onClick={() => setNav('account')}>حسابي</button></div><small>© 2026 DWLY EGY. جميع الحقوق محفوظة.</small><small className="developer-credit" dir="ltr">Developed by BOKA MOHAMED FADLE</small></footer>
 
     {cartOpen && <div className="overlay" onMouseDown={e => { if (e.target === e.currentTarget) setCartOpen(false) }}><aside className="cart-drawer"><div className="drawer-head"><div><span className="eyebrow">YOUR BAG</span><h2>سلة المشتريات <small>({count})</small></h2></div><button className="icon-btn" onClick={() => setCartOpen(false)} aria-label="إغلاق"><X/></button></div>
       {(session ? cartLines : guestLines.map(line => { const p = products.find(x => x.variants.some(v => v.id === line.variantId)); const v = p?.variants.find(x => x.id === line.variantId); return p && v ? { ...line, product: p, variant: v } : null }).filter(Boolean) as CartLine[]).length === 0 ? <div className="drawer-empty"><ShoppingBag size={35}/><p>السلة لسه فاضية</p><button className="primary-btn" onClick={() => setCartOpen(false)}>كمّل تسوق</button></div> : <>
-      <div className="cart-lines">{(session ? cartLines : guestLines.map(line => { const p = products.find(x => x.variants.some(v => v.id === line.variantId)); const v = p?.variants.find(x => x.id === line.variantId); return p && v ? { ...line, product: p, variant: v } : null }).filter(Boolean) as CartLine[]).map(line => <div className="cart-line" key={line.variantId}><div className="cart-thumb">{line.product.images[0] && <img src={productImageUrl(line.product.images[0].path) || ''} alt="" onError={e => { e.currentTarget.style.display = 'none' }}/>}</div><div className="cart-line-info"><b>{line.product.name_ar}</b><small>{line.variant.size?.label || 'مقاس موحد'} · {line.variant.color?.name_ar || 'لون'}</small><strong>{money(Number(line.variant.price_override ?? line.product.base_price))}</strong><div className="quantity-control"><button onClick={() => void updateQuantity(line, line.quantity - 1)} aria-label="تقليل"><Minus size={13}/></button><span>{line.quantity}</span><button onClick={() => void updateQuantity(line, Math.min(20, line.quantity + 1))} aria-label="زيادة"><Plus size={13}/></button></div></div><button className="remove-line" onClick={() => void updateQuantity(line, 0)} aria-label="حذف المنتج"><X size={16}/></button></div>)}</div>
+      <div className="cart-lines">{(session ? cartLines : guestLines.map(line => { const p = products.find(x => x.variants.some(v => v.id === line.variantId)); const v = p?.variants.find(x => x.id === line.variantId); return p && v ? { ...line, product: p, variant: v } : null }).filter(Boolean) as CartLine[]).map(line => <div className="cart-line" key={line.variantId}><div className="cart-thumb">{line.product.images[0] && <img src={productImageUrl(line.product.images[0].path) || ''} alt="" loading="lazy" decoding="async" width={78} height={95} onError={e => { e.currentTarget.style.display = 'none' }}/>}</div><div className="cart-line-info"><b>{line.product.name_ar}</b><small>{line.variant.size?.label || 'مقاس موحد'} · {line.variant.color?.name_ar || 'لون'}</small><strong>{money(Number(line.variant.price_override ?? line.product.base_price))}</strong><div className="quantity-control"><button onClick={() => void updateQuantity(line, line.quantity - 1)} aria-label="تقليل"><Minus size={13}/></button><span>{line.quantity}</span><button onClick={() => void updateQuantity(line, Math.min(20, line.quantity + 1))} aria-label="زيادة"><Plus size={13}/></button></div></div><button className="remove-line" onClick={() => void updateQuantity(line, 0)} aria-label="حذف المنتج"><X size={16}/></button></div>)}</div>
       <div className="drawer-summary"><div><span>المجموع الفرعي</span><b>{money(subtotal)}</b></div><p>الشحن والخصومات يتم حسابهم في خطوة إتمام الطلب.</p><button className="primary-btn full-btn" onClick={startCheckout}>إتمام الطلب</button></div></>}
     </aside></div>}
     {checkoutOpen && session && <CheckoutPanel session={session} onClose={() => setCheckoutOpen(false)} onSuccess={checkoutSucceeded} />}
@@ -267,23 +274,23 @@ export default function App() {
   </div>
 }
 
-function ProductCard({ product, onOpen }: { product: Product; onOpen: () => void }) {
+const ProductCard = memo(function ProductCard({ product, onOpen }: { product: Product; onOpen: (product: Product) => void }) {
   const image = product.images[0]
   const displayPrice = product.variants.length
     ? Math.min(...product.variants.map(variant => Number(variant.price_override ?? product.base_price)))
     : Number(product.base_price)
   const soldOut = product.variants.length > 0 && product.variants.every(variant => !variant.in_stock)
-  return <article className="product-card"><button className="product-image" onClick={onOpen} aria-label={`عرض ${product.name_ar}`}>
-    {image ? <img src={productImageUrl(image.path) || ''} alt={image.alt_ar || product.name_ar} loading="lazy" onError={e => { e.currentTarget.style.display = 'none' }}/> : <div className="image-placeholder"><span>DWLY<br/><small>NO IMAGE</small></span></div>}
+  return <article className="product-card"><button className="product-image" onClick={() => onOpen(product)} aria-label={`عرض ${product.name_ar}`}>
+    {image ? <img src={productImageUrl(image.path) || ''} alt={image.alt_ar || product.name_ar} loading="lazy" decoding="async" width={600} height={800} sizes="(max-width: 640px) 48vw, (max-width: 900px) 30vw, 23vw" onError={e => { e.currentTarget.style.display = 'none' }}/> : <div className="image-placeholder"><span>DWLY<br/><small>NO IMAGE</small></span></div>}
     {product.is_featured && <span className="product-tag">اختيار DWLY</span>}{soldOut && <span className="product-tag sold-out">نفد المخزون</span>}<span className="quick-view">عرض المنتج <ArrowUpLeft size={15}/></span>
-  </button><div className="product-info"><div><span className="product-category">{product.category?.name_ar || 'DWLY EGY'}</span><h3>{product.name_ar}</h3></div><div className="product-prices"><b>{money(displayPrice)}</b>{product.compare_at_price && <del>{money(product.compare_at_price)}</del>}</div></div><button className="card-open" onClick={onOpen}>اختار المقاس واللون <ArrowLeft size={15}/></button></article>
-}
+  </button><div className="product-info"><div><span className="product-category">{product.category?.name_ar || 'DWLY EGY'}</span><h3>{product.name_ar}</h3></div><div className="product-prices"><b>{money(displayPrice)}</b>{product.compare_at_price && <del>{money(product.compare_at_price)}</del>}</div></div><button className="card-open" onClick={() => onOpen(product)}>اختار المقاس واللون <ArrowLeft size={15}/></button></article>
+})
 function ProductDetail({ product, selected, onSelect, onBack, onAdd }: { product: Product; selected: ProductVariant | null; onSelect: (v: ProductVariant) => void; onBack: () => void; onAdd: () => void }) {
   const [activeImage, setActiveImage] = useState(0)
   const image = product.images[activeImage]
   const sizes = [...new Map(product.variants.filter(v => v.size).map(v => [v.size!.id, v.size!])).values()]
   const colors = [...new Map(product.variants.filter(v => v.color).map(v => [v.color!.id, v.color!])).values()]
-  return <main className="detail-page"><button className="back-link" onClick={onBack}><ArrowLeft size={16}/> العودة للمنتجات</button><div className="detail-layout"><div className="detail-gallery"><div className="detail-main-image">{image ? <img src={productImageUrl(image.path) || ''} alt={image.alt_ar || product.name_ar} onError={e => { e.currentTarget.style.display = 'none' }}/> : <div className="image-placeholder"><span>DWLY</span></div>}</div><div className="detail-thumbs">{product.images.map((img, index) => <button className={index === activeImage ? 'selected' : ''} key={img.id} onClick={() => setActiveImage(index)}><img src={productImageUrl(img.path) || ''} alt={img.alt_ar || ''} onError={e => { e.currentTarget.style.display = 'none' }}/></button>)}</div></div><div className="detail-copy"><span className="eyebrow">{product.category?.name_ar || 'DWLY EGY'}</span><h1>{product.name_ar}</h1><div className="detail-price">{money(Number(selected?.price_override ?? product.base_price))}{product.compare_at_price && <del>{money(product.compare_at_price)}</del>}</div><p>{product.description_ar || 'تفاصيل المنتج ومواصفاته ستظهر هنا عند إضافتها من إدارة المتجر.'}</p>
+  return <main className="detail-page"><button className="back-link" onClick={onBack}><ArrowLeft size={16}/> العودة للمنتجات</button><div className="detail-layout"><div className="detail-gallery"><div className="detail-main-image">{image ? <img src={productImageUrl(image.path) || ''} alt={image.alt_ar || product.name_ar} loading={activeImage === 0 ? 'eager' : 'lazy'} decoding="async" width={800} height={1000} onError={e => { e.currentTarget.style.display = 'none' }}/> : <div className="image-placeholder"><span>DWLY</span></div>}</div><div className="detail-thumbs">{product.images.map((img, index) => <button className={index === activeImage ? 'selected' : ''} key={img.id} onClick={() => setActiveImage(index)}><img src={productImageUrl(img.path) || ''} alt={img.alt_ar || ''} loading="lazy" decoding="async" width={65} height={78} onError={e => { e.currentTarget.style.display = 'none' }}/></button>)}</div></div><div className="detail-copy"><span className="eyebrow">{product.category?.name_ar || 'DWLY EGY'}</span><h1>{product.name_ar}</h1><div className="detail-price">{money(Number(selected?.price_override ?? product.base_price))}{product.compare_at_price && <del>{money(product.compare_at_price)}</del>}</div><p>{product.description_ar || 'تفاصيل المنتج ومواصفاته ستظهر هنا عند إضافتها من إدارة المتجر.'}</p>
     {sizes.length > 0 && <div className="variant-group"><label>المقاس</label><div className="size-options">{sizes.map(size => { const variant = product.variants.find(v => v.size?.id === size.id && (!selected?.color || v.color?.id === selected.color.id)); return <button key={size.id} disabled={!variant || variant.in_stock === false} className={selected?.size?.id === size.id ? 'chosen' : ''} onClick={() => variant && onSelect(variant)}>{size.label}</button> })}</div></div>}
     {colors.length > 0 && <div className="variant-group"><label>اللون {selected?.color && <span>· {selected.color.name_ar}</span>}</label><div className="color-options">{colors.map(color => { const variant = product.variants.find(v => v.color?.id === color.id && (!selected?.size || v.size?.id === selected.size.id)); return <button key={color.id} disabled={!variant || variant.in_stock === false} className={selected?.color?.id === color.id ? 'chosen' : ''} style={{ '--swatch': color.hex } as React.CSSProperties} onClick={() => variant && onSelect(variant)} aria-label={color.name_ar}><i/></button> })}</div></div>}
     {product.variants.length === 0 ? <p className="muted">لا توجد خيارات منشورة لهذا المنتج حاليًا.</p> : <button className="primary-btn full-btn" disabled={!selected || selected.in_stock === false} onClick={onAdd}>{selected?.in_stock === false ? 'غير متاح حاليًا' : 'أضف للسلة'} <ShoppingBag size={17}/></button>}
