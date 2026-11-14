@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>dwly.eg | ملابس شبابي وبناتي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#111;--paper:#fafafa;--card:#fff;--lav:#ececec;--pink:#111;--butter:#e2e2e2;--line:#dcdcdc;--red:#e5262b;--lime:#c8ff00;color-scheme:light;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#f2f2f2;--paper:#0e0e0e;--card:#181818;--lav:#2a2a2a;--pink:#f2f2f2;--butter:#3a3a3a;--line:#333;--red:#ff4040;--lime:#c8ff00;color-scheme:dark}}
+:root[data-theme="dark"]{--ink:#f2f2f2;--paper:#0e0e0e;--card:#181818;--lav:#2a2a2a;--pink:#f2f2f2;--butter:#3a3a3a;--line:#333;--red:#ff4040;--lime:#c8ff00;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:"Readex Pro",Tahoma,Arial,sans-serif;line-height:1.7}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--paper);z-index:10}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;display:flex;align-items:center;justify-content:space-between;padding:.8rem 1.2rem;background:var(--paper);border-bottom:1px solid var(--line)}
+.logo{font-weight:700;font-size:1.6rem;letter-spacing:-.02em}
+.cartbtn{background:var(--ink);color:var(--paper);border:0;border-radius:99px;padding:.5rem 1.1rem;display:flex;gap:.6rem;align-items:center}
+.cartbtn b{background:var(--red);color:#fff;border-radius:99px;min-width:1.5rem;padding:0 .4rem;text-align:center;font-size:.85rem}
+.hero{padding:3rem 1.2rem 2rem;max-width:1100px;margin:auto}
+.hero h1{font-size:clamp(2.4rem,9vw,5.5rem);line-height:1.1;margin:0 0 1rem;font-weight:700;letter-spacing:-.03em;max-width:12ch}
+.hero p{max-width:34ch;font-weight:300;font-size:1.15rem;margin:0 0 1.5rem}
+.cta{display:inline-block;background:var(--lime);color:#111;border:0;border-radius:99px;padding:.8rem 1.8rem;font-weight:500;text-decoration:none}
+.stage{margin-top:2.5rem;perspective:1100px;height:clamp(200px,34vw,340px)}
+.rack{height:100%;display:flex;justify-content:center;align-items:center;gap:1.5%;transform-style:preserve-3d;transform:rotateX(var(--rx,6deg)) rotateY(var(--ry,-14deg));transition:transform .25s ease-out}
+.g{width:19%;max-width:200px;transform:translateZ(var(--z)) translateY(var(--y)) rotateZ(var(--r));transition:transform .4s cubic-bezier(.2,.9,.3,1.3);filter:drop-shadow(0 16px 12px rgba(0,0,0,.22));cursor:pointer}
+.g svg{display:block;width:100%;height:auto;overflow:visible}
+.g:hover{transform:translateZ(140px) translateY(-26px) rotateZ(0deg) scale(1.08)}
+.sl{transform-origin:52px 44px}
+.sr{transform-origin:148px 44px}
+.g:hover .sl{animation:wl .55s ease-in-out infinite alternate}
+.g:hover .sr{animation:wr .55s ease-in-out infinite alternate}
+@keyframes wl{to{transform:rotate(16deg)}}
+@keyframes wr{to{transform:rotate(-16deg)}}
+
+main{max-width:1100px;margin:auto;padding:1rem 1.2rem 4rem}
+.filters{display:flex;gap:.5rem;margin-bottom:1.5rem;flex-wrap:wrap}
+.filters button{border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:99px;padding:.4rem 1.2rem}
+.filters button[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:1.2rem}
+.p{background:var(--card);border:1px solid var(--line);border-radius:20px;overflow:hidden;display:flex;flex-direction:column}
+.p .pic{position:relative;aspect-ratio:4/5;display:grid;place-items:center}
+.tag{position:absolute;top:.7rem;inset-inline-start:.7rem;background:var(--red);color:#fff;border-radius:99px;padding:0 .8rem;font-size:.8rem;font-weight:500}
+.old{font-weight:300;opacity:.6;text-decoration:line-through;margin-inline-start:.5rem;font-size:.9rem}
+.p .pic svg{width:46%;fill:rgba(255,255,255,.9)}
+.p .info{padding:1rem;display:flex;flex-direction:column;gap:.5rem;flex:1}
+.p h3{margin:0;font-size:1.05rem;font-weight:500}
+.price{font-weight:700;font-size:1.1rem}
+.sizes{display:flex;gap:.3rem}
+.sizes button{flex:1;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:8px;padding:.15rem 0;font-size:.85rem}
+.sizes button[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.add{margin-top:auto;border:0;background:var(--ink);color:var(--paper);border-radius:12px;padding:.6rem}
+.add.done{background:var(--lime);color:#111}
+#shade{position:fixed;inset:0;background:rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .2s;z-index:20}
+#shade.on{opacity:1;pointer-events:auto}
+#drawer{position:fixed;top:0;bottom:0;inset-inline-start:0;width:min(400px,100%);background:var(--paper);z-index:21;transform:translateX(105%);visibility:hidden;transition:transform .25s,visibility .25s;display:flex;flex-direction:column;padding:calc(1rem + env(safe-area-inset-top,0px)) 1.2rem calc(1rem + env(safe-area-inset-bottom,0px))}
+#drawer.on{transform:none;visibility:visible}
+#drawer header{position:static;padding:0 0 .8rem;border:0}
+#drawer h2{margin:0;font-size:1.3rem}
+.x{background:none;border:0;color:var(--ink);font-size:1.6rem;line-height:1}
+#items{flex:1;overflow:auto;display:flex;flex-direction:column;gap:.8rem}
+.row{display:flex;gap:.8rem;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:.6rem}
+.row i{width:44px;height:54px;border-radius:8px;flex:none}
+.row div{flex:1;font-size:.95rem}
+.row small{display:block;opacity:.7}
+.qty{display:flex;align-items:center;gap:.4rem}
+.qty button{width:28px;height:28px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--ink)}
+.empty{text-align:center;padding:2rem 0;opacity:.8}
+.total{display:flex;justify-content:space-between;font-weight:700;font-size:1.2rem;padding:1rem 0}
+.wa{display:block;text-align:center;text-decoration:none;background:#1fa855;color:#fff;border-radius:14px;padding:.8rem;font-weight:500}
+.wa[aria-disabled="true"]{opacity:.4;pointer-events:none}
+footer{text-align:center;padding:2rem 1rem;border-top:1px solid var(--line);font-weight:300}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}.g:hover .sl,.g:hover .sr{animation:none}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<symbol id="top" viewBox="0 0 64 64"><path d="M22 6l-16 10 6 12 8-4v34h24V24l8 4 6-12-16-10c-2 5-6 7-10 7s-8-2-10-7z"/></symbol>
+<symbol id="dress" viewBox="0 0 64 64"><path d="M24 4h16l2 14-6 8 14 34H14l14-34-6-8z"/></symbol>
+</svg>
+
+<header>
+<div class="logo" dir="ltr">dwly.eg</div>
+<button class="cartbtn" id="open" aria-label="فتح السلة">السلة <b id="count">0</b></button>
+</header>
+
+<section class="hero">
+<h1>هدومك اللي بتشبهك</h1>
+<p>ملابس شبابي وبناتي بأسعار مناسبة. اختار المقاس، ضيف للسلة، واطلب على واتساب.</p>
+<a class="cta" href="#shop">شوف المنتجات</a>
+<div class="stage" id="stage" aria-hidden="true"><div class="rack" id="rack"></div></div>
+</section>
+
+<main id="shop">
+<div class="filters" role="group" aria-label="تصفية المنتجات">
+<button data-f="all" aria-pressed="true">الكل</button>
+<button data-f="youth" aria-pressed="false">شبابي</button>
+<button data-f="girls" aria-pressed="false">بناتي</button>
+</div>
+<div class="grid" id="grid"></div>
+</main>
+
+<footer><bdi>dwly.eg</bdi> | التوصيل لجميع المحافظات. الدفع عند الاستلام.</footer>
+
+<div id="shade"></div>
+<aside id="drawer" aria-label="سلة المشتريات" aria-hidden="true">
+<header><h2>سلتك</h2><button class="x" id="close" aria-label="إغلاق">×</button></header>
+<div id="items"></div>
+<div class="total"><span>الإجمالي</span><span id="total">0 جنيه</span></div>
+<a class="wa" id="wa" href="#" target="_blank" rel="noopener" aria-disabled="true">اطلب على واتساب</a>
+</aside>
+
+<script>
+// عدّل رقم واتساب (بصيغة دولية بدون +) واسم المتجر من هنا
+var WA_NUMBER = "20100000000";
+var STORE = "dwly.eg";
+
+var PRODUCTS = [
+{id:1,n:"هودي أوفرسايز",p:650,c:"youth",t:"top",bg:"#1a1a1a"},
+{id:2,n:"تيشيرت قطن",p:280,old:350,c:"youth",t:"top",bg:"#555"},
+{id:3,n:"جينز واسع",p:720,c:"youth",t:"top",bg:"#333"},
+{id:4,n:"جاكيت بومبر",p:980,c:"youth",t:"top",bg:"#777"},
+{id:5,n:"فستان صيفي",p:540,c:"girls",t:"dress",bg:"#666"},
+{id:6,n:"بلوزة كروب",p:260,old:320,c:"girls",t:"top",bg:"#8a8a8a"},
+{id:7,n:"تنورة بليسيه",p:430,c:"girls",t:"dress",bg:"#3d3d3d"},
+{id:8,n:"كارديجان صوف",p:590,c:"girls",t:"top",bg:"#888"}
+];
+var SIZES = ["S","M","L","XL"];
+var cart = [];      // {id,size,q}
+var picked = {};    // مقاس مختار لكل منتج
+var filter = "all";
+
+function $(s){return document.querySelector(s)}
+function byId(id){return PRODUCTS.find(function(x){return x.id===id})}
+function money(n){return n.toLocaleString("ar-EG")+" جنيه"}
+
+function renderGrid(){
+  var g=$("#grid"); g.innerHTML="";
+  PRODUCTS.filter(function(p){return filter==="all"||p.c===filter}).forEach(function(p){
+    var sz=picked[p.id]||"M";
+    var el=document.createElement("article"); el.className="p";
+    el.innerHTML='<div class="pic" style="background:'+p.bg+'">'+(p.old?'<span class="tag">خصم</span>':'')+'<svg viewBox="0 0 64 64" aria-hidden="true"><use href="#'+p.t+'"/></svg></div>'+
+    '<div class="info"><h3>'+p.n+'</h3><div class="price">'+money(p.p)+(p.old?'<span class="old">'+money(p.old)+'</span>':'')+'</div>'+
+    '<div class="sizes" role="group" aria-label="المقاس">'+SIZES.map(function(s){return '<button data-s="'+s+'" aria-pressed="'+(s===sz)+'">'+s+'</button>'}).join("")+'</div>'+
+    '<button class="add">أضف للسلة</button></div>';
+    el.querySelectorAll(".sizes button").forEach(function(b){
+      b.onclick=function(){picked[p.id]=b.dataset.s;el.querySelectorAll(".sizes button").forEach(function(x){x.setAttribute("aria-pressed",x===b)})}
+    });
+    var add=el.querySelector(".add");
+    add.onclick=function(){
+      var s=picked[p.id]||"M";
+      var it=cart.find(function(x){return x.id===p.id&&x.size===s});
+      if(it){it.q++}else{cart.push({id:p.id,size:s,q:1})}
+      renderCart();
+      add.textContent="اتضافت";add.classList.add("done");
+      setTimeout(function(){add.textContent="أضف للسلة";add.classList.remove("done")},900);
+    };
+    g.appendChild(el);
+  });
+}
+
+function renderCart(){
+  var box=$("#items"),total=0,count=0;
+  box.innerHTML="";
+  if(!cart.length){box.innerHTML='<div class="empty">السلة فاضية. ضيف منتج وابدأ.</div>'}
+  cart.forEach(function(it,i){
+    var p=byId(it.id); total+=p.p*it.q; count+=it.q;
+    var r=document.createElement("div"); r.className="row";
+    r.innerHTML='<i style="background:'+p.bg+'"></i><div>'+p.n+'<small>المقاس '+it.size+' · '+money(p.p)+'</small></div>'+
+    '<div class="qty"><button aria-label="زيادة">+</button><span>'+it.q+'</span><button aria-label="نقصان">−</button></div>';
+    var b=r.querySelectorAll("button");
+    b[0].onclick=function(){it.q++;renderCart()};
+    b[1].onclick=function(){it.q--;if(it.q<1){cart.splice(i,1)}renderCart()};
+    box.appendChild(r);
+  });
+  $("#total").textContent=money(total);
+  $("#count").textContent=count;
+  var wa=$("#wa");
+  if(cart.length){
+    var lines=cart.map(function(it){var p=byId(it.id);return "• "+p.n+" (مقاس "+it.size+") × "+it.q+" = "+(p.p*it.q)+" جنيه"});
+    var msg="أهلاً "+STORE+"، عاوز أطلب:\n"+lines.join("\n")+"\nالإجمالي: "+total+" جنيه";
+    wa.href="https://wa.me/"+WA_NUMBER+"?text="+encodeURIComponent(msg);
+    wa.setAttribute("aria-disabled","false");
+  }else{wa.href="#";wa.setAttribute("aria-disabled","true")}
+}
+
+function drawer(on){
+  $("#drawer").classList.toggle("on",on);
+  $("#shade").classList.toggle("on",on);
+  $("#drawer").setAttribute("aria-hidden",!on);
+}
+$("#open").onclick=function(){drawer(true)};
+$("#close").onclick=function(){drawer(false)};
+$("#shade").onclick=function(){drawer(false)};
+document.addEventListener("keydown",function(e){if(e.key==="Escape")drawer(false)});
+document.querySelectorAll(".filters button").forEach(function(b){
+  b.onclick=function(){
+    filter=b.dataset.f;
+    document.querySelectorAll(".filters button").forEach(function(x){x.setAttribute("aria-pressed",x===b)});
+    renderGrid();
+  }
+});
+function garment(t,c){
+  var tee=t==="tee";
+  var sl=tee?"M52 42 L22 86 L46 100 L66 70 Z":"M52 42 L8 128 L32 140 L64 84 Z";
+  var sr=tee?"M148 42 L178 86 L154 100 L134 70 Z":"M148 42 L192 128 L168 140 L136 84 Z";
+  var st='stroke="#000" stroke-opacity=".18" stroke-width="1.5"';
+  return '<svg viewBox="0 0 200 210" style="fill:'+c+'">'+
+  '<path class="sl" d="'+sl+'" '+st+'/>'+
+  '<path class="sr" d="'+sr+'" '+st+'/>'+
+  '<path d="M60 36 C80 50 120 50 140 36 L152 44 L150 196 L50 196 L48 44 Z" '+st+'/>'+
+  (tee?'':'<rect x="49" y="184" width="102" height="13" fill="#000" fill-opacity=".2"/>')+
+  '<path d="M76 38 C90 62 110 62 124 38" fill="none" stroke="#000" stroke-opacity=".28" stroke-width="7"/></svg>';
+}
+var rack=$("#rack"),stage=$("#stage");
+[["sweat","#1a1a1a",-30,12,-6],["tee","#bdbdbd",20,-6,-3],["sweat","var(--red)",70,-18,0],["tee","var(--lime)",20,-6,3],["sweat","#fff",-30,12,6]].forEach(function(g){
+  var d=document.createElement("div");d.className="g";
+  d.style.setProperty("--z",g[2]+"px");d.style.setProperty("--y",g[3]+"px");d.style.setProperty("--r",g[4]+"deg");
+  d.innerHTML=garment(g[0],g[1]);rack.appendChild(d);
+});
+if(!matchMedia("(prefers-reduced-motion:reduce)").matches){
+  stage.addEventListener("pointermove",function(e){
+    var r=stage.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;
+    rack.style.setProperty("--ry",(-14+x*28)+"deg");
+    rack.style.setProperty("--rx",(6-y*14)+"deg");
+  });
+  stage.addEventListener("pointerleave",function(){rack.style.removeProperty("--ry");rack.style.removeProperty("--rx")});
+}
+renderGrid();renderCart();
+</script>
+</body>
+</html>
