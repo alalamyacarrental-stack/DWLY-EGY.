@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ArrowLeft, ArrowUpLeft, Check, ChevronDown, LoaderCircle, LogIn,
   Menu, Minus, Plus, Search, ShoppingBag, SlidersHorizontal, UserRound, X,
@@ -167,6 +167,12 @@ export default function App() {
       return n + (p && v ? Number(v.price_override ?? p.base_price) * x.quantity : 0)
     }, 0)
 
+  const openProduct = useCallback((product: Product) => {
+    setSelectedProduct(product)
+    setSelectedVariant(product.variants[0] ?? null)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [])
+
   const setNav = (next: Page) => { setMobileNavOpen(false); setPage(next); setSelectedProduct(null); setQuery(''); window.scrollTo({ top: 0, behavior: 'smooth' }) }
 
   const addToCart = async (variant: ProductVariant) => {
@@ -251,7 +257,7 @@ export default function App() {
       <main id="catalog" className="catalog-section">
         <div className="section-heading"><div><span className="eyebrow">THE DWLY EDIT</span><h2>{title}</h2><p>{page === 'home' ? 'قطع مختارة من الكتالوج المنشور.' : 'اكتشف المنتجات المتاحة في هذا القسم.'}</p></div><span className="result-count">{filteredProducts.length.toString().padStart(2, '0')} PRODUCTS</span></div>
         <div className="catalog-tools"><label className="search-box"><Search size={18}/><input value={query} onChange={e => setQuery(e.target.value)} placeholder="دوّر على منتج..." aria-label="ابحث عن منتج"/><kbd>⌕</kbd></label><label className="sort-box"><SlidersHorizontal size={16}/><span>ترتيب حسب</span><select value={sort} onChange={e => setSort(e.target.value)}><option value="newest">الأحدث</option><option value="featured">المميزة</option><option value="price-asc">السعر: الأقل</option><option value="price-desc">السعر: الأعلى</option></select><ChevronDown size={14}/></label></div>
-        {!isSupabaseConfigured ? <div className="state-panel error-state">اتصال Supabase غير مُعد. لم نستخدم منتجات أو مخزونًا تجريبيًا بدلًا من البيانات الحقيقية.</div> : loading ? <div className="state-panel"><LoaderCircle className="spin"/> بنحمّل المنتجات من المتجر...</div> : loadError ? <div className="state-panel error-state">{loadError}<button onClick={() => void loadProducts()}>إعادة المحاولة</button></div> : filteredProducts.length === 0 ? <div className="empty-catalog"><div className="empty-mark">DWLY</div><h3>{products.length === 0 ? 'لسه مفيش منتجات منشورة' : 'مفيش نتائج للبحث ده'}</h3><p>{products.length === 0 ? 'لما تضيف منتجات حقيقية وتفعّل نشرها هتظهر هنا تلقائيًا.' : 'جرّب كلمة بحث تانية أو اختار قسم مختلف.'}</p>{query && <button className="text-btn" onClick={() => setQuery('')}>مسح البحث</button>}</div> : <div className="product-grid">{filteredProducts.map(product => <ProductCard key={product.id} product={product} onOpen={() => { setSelectedProduct(product); setSelectedVariant(product.variants[0] ?? null); window.scrollTo({ top: 0, behavior: 'smooth' }) }} />)}</div>}
+        {!isSupabaseConfigured ? <div className="state-panel error-state">اتصال Supabase غير مُعد. لم نستخدم منتجات أو مخزونًا تجريبيًا بدلًا من البيانات الحقيقية.</div> : loading ? <div className="state-panel"><LoaderCircle className="spin"/> بنحمّل المنتجات من المتجر...</div> : loadError ? <div className="state-panel error-state">{loadError}<button onClick={() => void loadProducts()}>إعادة المحاولة</button></div> : filteredProducts.length === 0 ? <div className="empty-catalog"><div className="empty-mark">DWLY</div><h3>{products.length === 0 ? 'لسه مفيش منتجات منشورة' : 'مفيش نتائج للبحث ده'}</h3><p>{products.length === 0 ? 'لما تضيف منتجات حقيقية وتفعّل نشرها هتظهر هنا تلقائيًا.' : 'جرّب كلمة بحث تانية أو اختار قسم مختلف.'}</p>{query && <button className="text-btn" onClick={() => setQuery('')}>مسح البحث</button>}</div> : <div className="product-grid">{filteredProducts.map(product => <ProductCard key={product.id} product={product} onOpen={openProduct} />)}</div>}
       </main>
     </>}
 
@@ -268,17 +274,17 @@ export default function App() {
   </div>
 }
 
-function ProductCard({ product, onOpen }: { product: Product; onOpen: () => void }) {
+const ProductCard = memo(function ProductCard({ product, onOpen }: { product: Product; onOpen: (product: Product) => void }) {
   const image = product.images[0]
   const displayPrice = product.variants.length
     ? Math.min(...product.variants.map(variant => Number(variant.price_override ?? product.base_price)))
     : Number(product.base_price)
   const soldOut = product.variants.length > 0 && product.variants.every(variant => !variant.in_stock)
-  return <article className="product-card"><button className="product-image" onClick={onOpen} aria-label={`عرض ${product.name_ar}`}>
+  return <article className="product-card"><button className="product-image" onClick={() => onOpen(product)} aria-label={`عرض ${product.name_ar}`}>
     {image ? <img src={productImageUrl(image.path) || ''} alt={image.alt_ar || product.name_ar} loading="lazy" decoding="async" width={600} height={800} sizes="(max-width: 640px) 48vw, (max-width: 900px) 30vw, 23vw" onError={e => { e.currentTarget.style.display = 'none' }}/> : <div className="image-placeholder"><span>DWLY<br/><small>NO IMAGE</small></span></div>}
     {product.is_featured && <span className="product-tag">اختيار DWLY</span>}{soldOut && <span className="product-tag sold-out">نفد المخزون</span>}<span className="quick-view">عرض المنتج <ArrowUpLeft size={15}/></span>
-  </button><div className="product-info"><div><span className="product-category">{product.category?.name_ar || 'DWLY EGY'}</span><h3>{product.name_ar}</h3></div><div className="product-prices"><b>{money(displayPrice)}</b>{product.compare_at_price && <del>{money(product.compare_at_price)}</del>}</div></div><button className="card-open" onClick={onOpen}>اختار المقاس واللون <ArrowLeft size={15}/></button></article>
-}
+  </button><div className="product-info"><div><span className="product-category">{product.category?.name_ar || 'DWLY EGY'}</span><h3>{product.name_ar}</h3></div><div className="product-prices"><b>{money(displayPrice)}</b>{product.compare_at_price && <del>{money(product.compare_at_price)}</del>}</div></div><button className="card-open" onClick={() => onOpen(product)}>اختار المقاس واللون <ArrowLeft size={15}/></button></article>
+})
 function ProductDetail({ product, selected, onSelect, onBack, onAdd }: { product: Product; selected: ProductVariant | null; onSelect: (v: ProductVariant) => void; onBack: () => void; onAdd: () => void }) {
   const [activeImage, setActiveImage] = useState(0)
   const image = product.images[activeImage]
