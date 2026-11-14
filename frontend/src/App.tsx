@@ -92,13 +92,13 @@ export default function App() {
     setLoading(false)
   }, [])
 
-  const refreshRemoteCart = useCallback(async (uid: string, catalog = products) => {
+  const refreshRemoteCart = useCallback(async (uid: string, catalog = products, silent = false) => {
     if (!supabase) return
     const { data: cart, error: cartError } = await supabase.from('carts').select('id').eq('user_id', uid).maybeSingle()
-    if (cartError) { setNotice('تعذر التحقق من السلة المحفوظة. حاول تحديث الصفحة.'); return }
+    if (cartError) { if (!silent) setNotice('تعذر التحقق من السلة المحفوظة. حاول تحديث الصفحة.'); return }
     if (!cart) { setCartLines([]); return }
     const { data, error } = await supabase.from('cart_items').select('variant_id,quantity').eq('cart_id', cart.id)
-    if (error) { setNotice('تعذر قراءة السلة المحفوظة.'); return }
+    if (error) { if (!silent) setNotice('تعذر قراءة السلة المحفوظة.'); return }
     const lines: CartLine[] = []
     for (const row of data || []) {
       for (const product of catalog) {
@@ -176,7 +176,7 @@ export default function App() {
       const current = cartLines.find(x => x.variantId === variant.id)?.quantity || 0
       const { error } = await supabase.rpc('cart_set_item', { p_variant_id: variant.id, p_quantity: current + 1 })
       if (error) return
-      await refreshRemoteCart(session.user.id)
+      await refreshRemoteCart(session.user.id, products, true)
     } else {
       setGuestLines(old => {
         const found = old.find(x => x.variantId === variant.id)
